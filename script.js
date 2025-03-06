@@ -38,6 +38,8 @@ const trigger2Channel = document.getElementById("trigger2Channel");
 const midi2NoteInput = document.getElementById("midi2NoteInput");
 const trigger3Channel = document.getElementById("trigger3Channel");
 const midi3NoteInput = document.getElementById("midi3NoteInput");
+const trigger4Channel = document.getElementById("trigger4Channel");
+const midi4NoteInput = document.getElementById("midi4NoteInput");
 const midiPitchControlInput = document.getElementById("midiPitchControlInput");
 const midiVelInput = document.getElementById("midiVelInput");
 const pitchBendInput = document.getElementById("pitchBendInput");
@@ -84,6 +86,7 @@ let output,
 let midi1Note = 60;
 let midi2Note = 60;
 let midi3Note = 60;
+let midi4Note = 60;
 
 // Check if Web MIDI API is supported
 if (navigator.requestMIDIAccess) {
@@ -233,6 +236,11 @@ midi2NoteInput.onchange = function () {
 //listen for updates to Midi3 trigger note
 midi3NoteInput.onchange = function () {
   midi3Note = midi3NoteInput.value;
+};
+
+//listen for updates to Midi4 trigger note
+midi4NoteInput.onchange = function () {
+  midi4Note = midi4NoteInput.value;
 };
 
 //choose Midi output
@@ -426,6 +434,20 @@ function Trigger3(rightThumbX, rightPinkyX) {
   }
 }
 
+let t4on = false;
+let t4DistanceActivate = 0.02;
+let t4DistanceDeactivate = 0.05;
+function Trigger4(distance) {
+  if(distance <= t4DistanceActivate) {
+    if(t4on) return;
+    t4on = true;
+    output.playNote(midi4Note, [trigger4Channel.value], {
+      attack: 1,
+      duration: 500,
+    });
+  }
+}
+
 //Output movement to midi
 let controls_io = [
   { in: BPMAutomateInput, out: autoBPMControl },
@@ -505,6 +527,13 @@ function myMidi(
   }
   if (gesture.checked && output && rightThumb && rightPinky) {
     Trigger3(rightThumb.x, rightPinky.x);
+  }
+  if (gesture.checked && output && leftThumb && leftIndex) {
+    Trigger4(
+      Math.sqrt(
+        (leftThumb.x - leftIndex.x) ** 2 + (leftThumb.y - rightThumb.y) ** 2
+      )
+    );
   }
   if (gesture.checked && output && leftIndex && rightIndex) {
     Trigger1(
